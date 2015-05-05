@@ -1,0 +1,28 @@
+{
+	"users": [{
+		"firstName": "Pete",
+		"lastName": "Chern",
+		"email": "pete@email.com",
+		"password": "test"
+		},{
+		"firstName": "Denice",
+		"lastName": "Valbuena",
+		"email": "denice@email.com",
+		"password": "test"
+		},{
+		"firstName": "Burna",
+		"lastName": "De Almeida Cruz",
+		"email": "burna@csu.fullerton.edu",
+		"password": "test"
+		},{
+		"firstName": "Akhil",
+		"lastName": "Angad Choudhari",
+		"email": "akhil@email.com",
+		"password": "test"
+		},{
+		"firstName": "Kartikeya",
+		"lastName": "Gupta",
+		"email": "kartikeya@email.com",
+		"password": "test"
+	}]
+}
