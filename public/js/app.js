@@ -1,14 +1,13 @@
 // enum
 var red = 1, blue = 2, empty = 3;
 var turn = red;
-
+var isOver = false;
 
 var socket = io();
 //socket.emit('assignToken', turn);
 
 function updateGrid(moveJSON, isBroadcast) {
     if(moveJSON.valid) {
-        console.log("#" + moveJSON.move);
         if(moveJSON.turn === red) {
             $("#" + moveJSON.move).addClass("piece").addClass("red");
             if(isBroadcast === true) {
@@ -23,33 +22,66 @@ function updateGrid(moveJSON, isBroadcast) {
     } 
 }
 
+//disable the ability to click on the grid
+function blockClick() {
+    $(".piece").css( 'pointer-events', 'none' );
+}
+
 socket.on('move', function(moveJSON) {
-    console.log("Received move event", moveJSON);
+    var isBroadcast = true;
     if(moveJSON.valid) {
-        updateGrid(moveJSON, true);   
+        updateGrid(moveJSON, isBroadcast);   
     }
+});
+
+
+socket.on('move2', function(moveJSON) {
+    var isBroadcast = false;
+    if(moveJSON.valid) {      
+        updateGrid(moveJSON, isBroadcast);
+    } else {
+        window.alert("Invalid move");
+    }
+    
 });
 
 socket.on('winner', function(turn) {
-  window.alert("Player " + turn + "wins");
+  isOver = true;
+  console.log("winner is called o client side");
+  $("body .message p").text("Player " + turn + " win.");
+  $("body .message").append($("<button>").text("click here to play again."));
+
+  blockClick();
 });
 
-socket.on('move2', function(moveJSON) {
-    
-    if(moveJSON.valid) {      
-        updateGrid(moveJSON, false);
-    } else {
-        window.alert("It is not your turn");
-    }
-    
+socket.on('Draw', function(draw) {
+  isOver = true;
+  //console.log("winner is called o client side");
+  $("body .message p").text("Game is a Draw!");
+  $("body .message").append($("<button>").text("click here to playe again."));
 
+  blockClick();
+});
 
+socket.on('gameOver', function() {
+    isOver = true;
+    blockClick();
+    $("body .message p").text("Game Over. One of the players disconnected.");
 });
 
 //include a message to tell the user that the room is full
 socket.on('denied', function () {
-    //disable the ability to click on the grid
-    $("div.c4-control div.piece").style.pointerEvents = 'none';
+    $("body .message p").text("This room is full. You can not play.");
+    blockClick();
+});
+
+
+$("body .message button").on("click", function () {
+    console.log("listener of button");
+    $("body .message p").text(" ");
+    //$("body .message button").remove();
+    socket.emit("newGame");
+
 });
 
 $("div.c4-control div.piece").hover(
@@ -66,30 +98,25 @@ $("div.c4-control div.piece").hover(
         $(this).removeClass("red").removeClass("blue");
     }
 );
-//var possiblemoves = [0.1,2,3,5,6];
+
+
+/*    $(this).removeClass("red").removeClass("blue");
+    var moveJSON = {'color': turn, 'column':column };
+    // alert("click " + JSON.stringify(moveJSON));
+    socket.emit('validateMove', moveJSON);
+});*/
+
+//var possiblemoves = [0,1,2,4,3,5,6];
 //var setTime = 7000;
+
+//click even to drop the token
 $("div.c4-control div.piece").click(function () {
     var column = parseInt($(this).attr("id"));
-    /* for (var row = 6; row > 0; row--) {
-        var id = '#' + row + column;
-        if ($(id).attr("class") === undefined) {
-            if (turn == red) {
-                $(id).addClass("piece").addClass("red");
-                //turn = blue;
-            }
-            else {
-                $(id).addClass("piece").addClass("blue");
-                //turn = red;
-            }
 
-            if (row === 1) {
-                $("#" + column).removeClass("piece");
-            }
-
-            break;
-        }
-    } */
-  //  setTime = 7000;
+    setTime = 7000;
+    //reset time if player makes a move.
+    
+    //socket.emit("timer",setTime);
     $(this).removeClass("red").removeClass("blue");
     var moveJSON = {'color': turn, 'column':column };
     // alert("click " + JSON.stringify(moveJSON));
@@ -98,8 +125,8 @@ $("div.c4-control div.piece").click(function () {
 
 //if no button is click set start the timer countdown
 
-/*setInterval(computermove,setTime);
-
+//setInterval(computermove,setTime);
+/*
 function computermove(){
 var compmove = Math.floor((Math.random()* possiblemoves.length));
 var compChoice = possiblemoves[compmove];
@@ -109,6 +136,9 @@ console.log("this is random comp move " + compChoice);
     $(this).removeClass("red").removeClass("blue");
     var moveJSON = {'color': turn, 'column':compChoice };
     // alert("click " + JSON.stringify(moveJSON));
-    socket.emit('validateMove', moveJSON);
-    //possiblemoves.splice(compmove,1);
+    if(!isOver) {
+        socket.emit('validateMove', moveJSON);
+        //possiblemoves.splice(compmove,1);
+    }
+    
 };*/
